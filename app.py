@@ -4,6 +4,7 @@ from ingest import load_and_index_documents
 from qa_engine import query_vector_store
 from summarizer import summarize_text
 import os
+import tempfile
 
 st.set_page_config(page_title="IMF LLM Assistant")
 st.title("🌍 IMF LLM Assistant: Understand Policy Better")
@@ -13,11 +14,12 @@ uploaded_file = st.file_uploader("Upload a policy report (PDF or TXT):", type=["
 
 if uploaded_file:
     st.success("Document uploaded! Building index...")
-    doc_path = f"data/{uploaded_file.name}"
-    with open(doc_path, "wb") as f:
-        f.write(uploaded_file.read())
 
-    load_and_index_documents(doc_path)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+        tmp_file.write(uploaded_file.read())
+        tmp_path = tmp_file.name
+
+    load_and_index_documents(tmp_path)
     st.success("✅ Document indexed successfully!")
 
     st.subheader("🔍 Ask a question about this document")
